@@ -13,10 +13,6 @@ html {
   scroll-behavior: smooth;
 }
 
-body {
-  /* overflow: hidden; */
-  background: lightpink;
-}
 .customOverlay {
   backdrop-filter: blur(15px);
 }

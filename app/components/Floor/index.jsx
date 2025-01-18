@@ -1,8 +1,8 @@
+/** @format */
+
 "use client";
 import React, { useState, useEffect } from "react";
-import { FaGem, FaBomb, FaGift } from "react-icons/fa";
-// import SuccessSound from "/audio/success.m4a";
-// import BombSound from "/audio/bomb.m4a";
+import { FaBomb, FaGem, FaGift } from "react-icons/fa";
 
 const Floor = ({
   floorIndex,
@@ -10,13 +10,23 @@ const Floor = ({
   boxesPerFloor,
   handleBoxClick,
   difficulty,
+  selectedBoxHistory,
+  setSelectedBoxHistory,
+  gameOver,
+  onGameOver,
+  onReset,
+  bombSelect,
+  isRevealing,
 }) => {
-  const [boxIndices, setBoxIndices] = useState([]);
+  const [boxIndices, setBoxIndices] = useState(
+    Array.from({ length: boxesPerFloor }, (_, index) => index)
+  );
   const [initialRandomization, setInitialRandomization] = useState(false);
   const [bombSelected, setBombSelected] = useState(false);
   const [chosenBoxes, setChosenBoxes] = useState(
     Array(boxesPerFloor).fill(false)
   );
+  const [revealAll, setRevealAll] = useState(false);
 
   useEffect(() => {
     const randomizeBoxIndices = () => {
@@ -34,111 +44,131 @@ const Floor = ({
       setBoxIndices(randomizedIndices);
     };
 
-    if (!initialRandomization || currentFloor === 1 || bombSelected) {
+    if (!initialRandomization || currentFloor === 1 || gameOver) {
       randomizeBoxIndices();
       setInitialRandomization(true);
       setBombSelected(false);
       setChosenBoxes(Array(boxesPerFloor).fill(false));
+      setRevealAll(false);
+
+      if (setSelectedBoxHistory) {
+        setSelectedBoxHistory((prev) => ({
+          ...prev,
+          [floorIndex]: null,
+        }));
+      }
     }
-  }, [boxesPerFloor, currentFloor, initialRandomization, bombSelected]);
+  }, [
+    boxesPerFloor,
+    currentFloor,
+    initialRandomization,
+    gameOver,
+    floorIndex,
+    setSelectedBoxHistory,
+  ]);
 
-  // useEffect(() => {
-  //   const audio = new Audio(SuccessSound);
-  //   audio.preload = "auto";
+  const getGameParameters = () => {
+    switch (difficulty) {
+      case "normal":
+        return { gems: 3, bombs: 1 };
+      case "medium":
+        return { gems: 2, bombs: 1 };
+      case "hard":
+        return { gems: 1, bombs: 2 };
+      case "impossible":
+        return { gems: 1, bombs: 3 };
+      default:
+        return { gems: 0, bombs: 0 };
+    }
+  };
 
-  //   return () => {
-  //     audio.pause();
-  //     audio.src = "";
-  //   };
-  // }, []);
-
-  // useEffect(() => {
-  //   if (currentFloor > floorIndex + 1) {
-  //     const audio = new Audio(SuccessSound);
-  //     audio.play();
-  //   }
-  // }, [currentFloor, floorIndex]);
-
-  // useEffect(() => {
-  //   if (bombSelected) {
-  //     const audio = new Audio(BombSound);
-  //     audio.play();
-  //   }
-  // }, [bombSelected]);
-
-  let numGems, numBombs;
-
-  switch (difficulty) {
-    case "normal":
-      numGems = 3;
-      numBombs = 1;
-      break;
-    case "medium":
-      numGems = 2;
-      numBombs = 1;
-      break;
-    case "hard":
-      numGems = 1;
-      numBombs = 2;
-      break;
-    case "impossible":
-      numGems = 1;
-      numBombs = 3;
-      break;
-    default:
-      numGems = 0;
-      numBombs = 0;
-  }
+  const { gems: numGems } = getGameParameters();
 
   const handleClick = (boxIndex, boxValue) => {
     if (boxValue === 0) {
       setBombSelected(true);
+      setRevealAll(true); 
+
+      if (onGameOver) {
+        onGameOver();
+      }
+      setTimeout(() => {
+        if (onReset) {
+          onReset();
+        }
+        setRevealAll(false);
+      }, 2000);
+    } else if (boxValue === 1) {
+      setSelectedBoxHistory((prev) => ({
+        ...prev,
+        [floorIndex]: boxIndex,
+      }));
     }
+
     handleBoxClick(floorIndex, boxValue);
     const updatedChosenBoxes = [...chosenBoxes];
     updatedChosenBoxes[boxIndex] = true;
     setChosenBoxes(updatedChosenBoxes);
   };
 
+  if (!boxesPerFloor || boxesPerFloor <= 0) {
+    return <div>Invalid floor configuration</div>;
+  }
+
   return (
-    <div className="flex items-center shadow-2xl rounded-lg transition-all duration-300">
+    <div className="flex justify-between items-center shadow-2xl rounded-lg transition-all max-md:gap-4 duration-300 py-2">
       <div className="text-xs mb-2 mx-2 mt-4">Floor {floorIndex + 1}</div>
       {boxIndices.map((boxIndex) => {
-        let boxValue = 0;
+        let boxValue = boxIndex < numGems ? 1 : 0;
+        let content =
+          boxValue === 0 ? (
+            <FaBomb size={28} className="text-black" />
+          ) : (
+            <FaGem size={28} className="text-sky-500" />
+          );
 
-        if (boxIndex < numGems) {
-          boxValue = 1;
-        }
-
-        let content = (
-          <FaGift size={22} className="text-rose-500 cursor-pointer" />
-        );
-        if (boxValue === 0) {
-          content = <FaBomb size={22} className="text-black" />;
-        } else if (boxValue === 1) {
-          content = <FaGem size={22} className="text-sky-500" />;
-        }
+        const isCurrentFloor = currentFloor === floorIndex + 1;
+        const wasGemSelected =
+          selectedBoxHistory[floorIndex] === boxIndex && boxValue === 1;
+        const shouldReveal =
+          chosenBoxes[boxIndex] ||
+          currentFloor > floorIndex + 1 ||
+          (bombSelected && isCurrentFloor) ||
+          isRevealing;
 
         return (
           <div
             key={boxIndex}
-            className={`w-16 h-20 flex items-center justify-center bg-gray-200 ${
-              currentFloor === floorIndex + 1
-                ? "border-b-4  bg-gray-950 transform shadow-md cursor-pointer"
-                : currentFloor > floorIndex + 1
-                ? "bg-green-300 transform rotate-0"
-                : "opacity-50"
-            } transition-all duration-100`}
+            className={`h-10 w-20 flex items-center justify-center rounded-lg 
+              ${
+                isCurrentFloor && !bombSelected
+                  ? "bg-green-400 transform shadow-md cursor-pointer"
+                  : wasGemSelected
+                  ? "bg-yellow-300 ring-2 ring-yellow-500"
+                  : bombSelected && boxValue === 0
+                  ? "bg-red-500"
+                  : currentFloor > floorIndex + 1
+                  ? "bg-gray-200"
+                  : "bg-gray-800 opacity-50"
+              }
+              ${
+                isRevealing
+                  ? "transition-all duration-500"
+                  : "transition-all duration-100"
+              }
+              `}
             onClick={
-              currentFloor === floorIndex + 1
+              isCurrentFloor && !bombSelected && !isRevealing
                 ? () => handleClick(boxIndex, boxValue)
                 : null
             }
           >
-            {chosenBoxes[boxIndex] || currentFloor > floorIndex + 1 ? (
+            {shouldReveal ? (
               content
             ) : (
-              <FaGift size={22} className="text-rose-500 cursor-pointer" />
+              <div className="transform transition-all duration-300 hover:scale-110">
+                    <FaGift size={28} className="text-rose-500" />
+                  </div>
             )}
           </div>
         );
