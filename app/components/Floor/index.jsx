@@ -3,6 +3,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { FaBomb, FaGem, FaGift } from "react-icons/fa";
+import { Howl } from "howler";
 
 const Floor = ({
   floorIndex,
@@ -18,6 +19,17 @@ const Floor = ({
   bombSelect,
   isRevealing,
 }) => {
+  const gemSound = new Howl({
+    src: ["/audio/success.mp3"], 
+  });
+  
+  const bombSound = new Howl({
+    src: ["/audio/bomb.mp3"], 
+  });
+  
+  const selectionSound = new Howl({
+    src: ["/audio/ting.mp3"],
+  });
   const [boxIndices, setBoxIndices] = useState(
     Array.from({ length: boxesPerFloor }, (_, index) => index)
   );
@@ -88,6 +100,7 @@ const Floor = ({
     if (boxValue === 0) {
       setBombSelected(true);
       setRevealAll(true); 
+      bombSound.play();
 
       if (onGameOver) {
         onGameOver();
@@ -99,10 +112,13 @@ const Floor = ({
         setRevealAll(false);
       }, 2000);
     } else if (boxValue === 1) {
+      gemSound.play();
       setSelectedBoxHistory((prev) => ({
         ...prev,
         [floorIndex]: boxIndex,
       }));
+    }else {
+      selectionSound.play();
     }
 
     handleBoxClick(floorIndex, boxValue);

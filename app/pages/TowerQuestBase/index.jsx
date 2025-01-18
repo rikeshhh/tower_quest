@@ -23,6 +23,12 @@ const Game = () => {
   const [roundsToPlay, setRoundsToPlay] = useState(5);
   const [points, setPoints] = useState(50);
   const [selectedBoxHistory, setSelectedBoxHistory] = useState({});
+  const gemWin = new Howl({
+    src: ["/audio/win.mp3"],
+  });
+  const bombLoss = new Howl({
+    src: ["/audio/lose.mp3"],
+  });
   useEffect(() => {
     let newTotalFloors = 8;
     let newBoxesPerFloor = 3;
@@ -49,23 +55,20 @@ const Game = () => {
   const handleBoxClick = (floorIndex, boxValue) => {
     if (gameStatus !== "playing" || floorIndex + 1 !== currentFloor) return;
     toast.dismiss();
-  
+
     if (boxValue === 1) {
-      // Gem selected logic remains the same
       if (currentFloor === totalFloors) {
         setGameStatus("won");
+        gemWin.play();
         setAutoPlay(false);
       } else {
         setCurrentFloor(currentFloor + 1);
-        // ... rest of your gem logic
       }
     } else {
-      // Bomb selected
       setBombSelected(true);
       setIsRevealing(true);
       setPoints(points - 15);
-      
-      // Delay reset
+      bombLoss.play();
       setTimeout(() => {
         if (points - 15 <= 0) {
           setGameStatus("lost");
@@ -74,14 +77,16 @@ const Game = () => {
           toast("Ops! That's a bomb 😭", {
             icon: "💣",
           });
+
           setGameStatus("playing");
           setCurrentFloor(1);
           setRoundsToPlay(5);
           setBombSelected(false);
           setIsRevealing(false);
           setSelectedBoxHistory({});
+          bombLoss.play();
         }
-      }, 2000); // 2 second delay
+      }, 2000);
     }
   };
 
@@ -169,17 +174,17 @@ const Game = () => {
               (_, floorIndex) =>
                 gameStatus === "playing" && (
                   <Floor
-                  key={floorIndex}
-                  floorIndex={floorIndex}
-                  currentFloor={currentFloor}
-                  boxesPerFloor={boxesPerFloor}
-                  handleBoxClick={handleBoxClick}
-                  difficulty={difficultyLevel}
-                  selectedBoxHistory={selectedBoxHistory}
-                  setSelectedBoxHistory={setSelectedBoxHistory}
-                  bombSelected={bombSelected}
-                  isRevealing={isRevealing}
-                />
+                    key={floorIndex}
+                    floorIndex={floorIndex}
+                    currentFloor={currentFloor}
+                    boxesPerFloor={boxesPerFloor}
+                    handleBoxClick={handleBoxClick}
+                    difficulty={difficultyLevel}
+                    selectedBoxHistory={selectedBoxHistory}
+                    setSelectedBoxHistory={setSelectedBoxHistory}
+                    bombSelected={bombSelected}
+                    isRevealing={isRevealing}
+                  />
                 )
             )}
           </div>
