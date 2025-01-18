@@ -2,20 +2,99 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  /* overflow: hidden; */
+  background: lightpink;
+}
+.customOverlay {
+  backdrop-filter: blur(15px);
+}
+
+.customModal {
+  max-width: 500px;
+  border-radius: 10px;
+  width: 100%;
+}
+@keyframes customEnterOverlayAnimation {
+  0% {
+    transform: scale(0);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes customLeaveOverlayAnimation {
+  0% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(0);
+  }
+}
+
+@keyframes customEnterModalAnimation {
+  0% {
+    transform: scale(0.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes customLeaveModalAnimation {
+  0% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(0.2);
+  }
+}
+
+#my-tooltip {
+  max-width: 400px;
+  font-size: 13px;
+  border-radius: 10px;
+  text-align: justify;
+  font-family: monospace;
+  z-index: 1000;
+}
+
+@media only screen and (max-width: 768px) {
+  #my-tooltip {
+    max-width: 260px;
+  }
+}
+
+/* width */
+::-webkit-scrollbar {
+  width: 7px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  cursor: pointer;
+  scroll-behavior: smooth;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, lightpink, lightgreen);
+  cursor: pointer;
+  scroll-behavior: smooth;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(to bottom, lightgreen, lightpink);
+  cursor: pointer;
+  scroll-behavior: smooth;
 }
