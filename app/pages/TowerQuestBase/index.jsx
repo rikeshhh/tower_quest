@@ -23,6 +23,8 @@ const Game = () => {
   const [roundsToPlay, setRoundsToPlay] = useState(5);
   const [points, setPoints] = useState(50);
   const [selectedBoxHistory, setSelectedBoxHistory] = useState({});
+  const [resetKey, setResetKey] = useState(0);
+
   const gemWin = new Howl({
     src: ["/audio/win.mp3"],
   });
@@ -84,6 +86,7 @@ const Game = () => {
           setBombSelected(false);
           setIsRevealing(false);
           setSelectedBoxHistory({});
+          setResetKey((prevKey) => prevKey + 1);
           bombLoss.play();
         }
       }, 2000);
@@ -159,7 +162,7 @@ const Game = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center h-full md:h-screen">
+    <div className="flex flex-col items-center justify-center h-full md:h-screen ">
       {!gameStarted && (
         <DialogBox
           setDifficultyLevel={setDifficultyLevel}
@@ -167,14 +170,14 @@ const Game = () => {
         />
       )}
       {gameStarted && (
-        <div className="shadow-2xl p-6 rounded-lg">
+        <div className="shadow-2xl p-6 rounded-lg bg-slate-700 text-white">
           <Header difficultyLevel={difficultyLevel} />
           <div className="grid grid-cols-1 gap-4 place-content-center">
             {Array.from({ length: totalFloors }).map(
               (_, floorIndex) =>
                 gameStatus === "playing" && (
                   <Floor
-                    key={floorIndex}
+                    key={`${resetKey}-${floorIndex}`}
                     floorIndex={floorIndex}
                     currentFloor={currentFloor}
                     boxesPerFloor={boxesPerFloor}

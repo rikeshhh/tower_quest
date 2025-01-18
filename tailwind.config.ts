@@ -14,6 +14,7 @@ export default {
       },
       fontFamily: {
         montserrat: ['var(--font-montserrat)'],
+        start2p: ['var(--font-start2p)'],
       },
     },
   },

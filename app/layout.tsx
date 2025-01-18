@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Montserrat } from "next/font/google";
+import { Montserrat, Press_Start_2P } from "next/font/google";
 import "./globals.css";
 
 const montserrat = Montserrat({
@@ -7,6 +7,12 @@ const montserrat = Montserrat({
   weight: ['300', '400', '500', '700'],
   style: ['normal'],
   variable: '--font-montserrat',
+});
+const start2p = Press_Start_2P({
+  subsets: ['latin'],
+  weight: ['400'],
+  style: ['normal'],
+  variable: '--font-start2p',
 });
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -21,7 +27,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${montserrat.variable}  antialiased`}
+        className={`${montserrat.variable}
+        ${start2p.variable}  antialiased`}
       >
         {children}
       </body>

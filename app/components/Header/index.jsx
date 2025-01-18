@@ -4,19 +4,13 @@ import { Tooltip } from "react-tooltip";
 
 const Header = ({ difficultyLevel }) => (
   <>
-    <Tooltip id="my-tooltip" />
-    <div className="text-4xl mb-4 text-green-600 flex items-center justify-center mt-10">
-      <h1 className="mt-8">Tower Quest</h1>
-      <IoIosInformationCircle
-        data-tooltip-id="my-tooltip"
-        data-tooltip-variant="info"
-        data-tooltip-content="Tower Quest features eight floors, each with a set number of boxes. Players begin at the  floor 1 and select a box. If you uncover a gem, you advance to the next floor; if you reveal a bomb, the game resets to the beginning until your points become zero. The goal is to ascend to the top floor by selecting gems while avoiding bombs."
-        size={20}
-        className="cursor-pointer"
-      />
+    <Tooltip id="my-tooltip"/>
+    <div className="text-4xl mb-4 text-green-600 flex items-center justify-center mt-10 font-start2p">
+      <h1 className="mt-8 text-center text-red-500 max-md:text-2xl">Tower Quest</h1>
+      
     </div>
     {difficultyLevel && (
-      <div className="text-sm mb-4 flex items-center justify-center gap-2">
+      <div className="text-xs md:text-sm mb-4 flex items-center justify-center gap-2 font-start2p">
         Difficulty Level:{" "}
         {difficultyLevel.charAt(0).toUpperCase() + difficultyLevel.slice(1)}
         <CiCircleQuestion

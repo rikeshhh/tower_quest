@@ -133,7 +133,7 @@ const Floor = ({
 
   return (
     <div className="flex justify-between items-center shadow-2xl rounded-lg transition-all max-md:gap-4 duration-300 py-2">
-      <div className="text-xs mb-2 mx-2 mt-4">Floor {floorIndex + 1}</div>
+      <div className="text-xs mb-2 mx-2 mt-4 font-start2p gap-2 flex">Floor <span className="text-red-600 animate-pulse">'{floorIndex + 1}'</span></div>
       {boxIndices.map((boxIndex) => {
         let boxValue = boxIndex < numGems ? 1 : 0;
         let content =
@@ -158,9 +158,9 @@ const Floor = ({
             className={`h-10 w-20 flex items-center justify-center rounded-lg 
               ${
                 isCurrentFloor && !bombSelected
-                  ? "bg-green-400 transform shadow-md cursor-pointer"
+                  ? "bg-slate-800 transform shadow-md cursor-pointer"
                   : wasGemSelected
-                  ? "bg-yellow-300 ring-2 ring-yellow-500"
+                  ? "bg-red-300 ring-2 ring-red-500"
                   : bombSelected && boxValue === 0
                   ? "bg-red-500"
                   : currentFloor > floorIndex + 1
