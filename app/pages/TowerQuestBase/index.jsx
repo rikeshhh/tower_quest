@@ -9,6 +9,7 @@ import { toast } from "react-hot-toast";
 import Footer from "../../components/Footer";
 import AutoPlayControls from "../../components/Autoplay";
 import Message from "../../components/Message";
+import { FaMusic, FaSun } from "react-icons/fa";
 
 const Game = () => {
   const [bombSelected, setBombSelected] = useState(false);
@@ -24,39 +25,24 @@ const Game = () => {
   const [points, setPoints] = useState(50);
   const [selectedBoxHistory, setSelectedBoxHistory] = useState({});
   const [resetKey, setResetKey] = useState(0);
-
+  const backgroundMusic = new Howl({
+    src: ["/audio/background-music.mp3"],
+    loop: true,
+  });
   const gemWin = new Howl({
     src: ["/audio/win.mp3"],
   });
   const bombLoss = new Howl({
     src: ["/audio/lose.mp3"],
   });
-  useEffect(() => {
-    let newTotalFloors = 8;
-    let newBoxesPerFloor = 3;
-    switch (difficultyLevel) {
-      case "normal":
-        newBoxesPerFloor = 4;
-        break;
-      case "medium":
-        newBoxesPerFloor = 3;
-        break;
-      case "hard":
-        newBoxesPerFloor = 3;
-        break;
-      case "impossible":
-        newBoxesPerFloor = 4;
-        break;
-      default:
-        break;
-    }
-    setTotalFloors(newTotalFloors);
-    setBoxesPerFloor(newBoxesPerFloor);
-  }, [difficultyLevel]);
 
   const handleBoxClick = (floorIndex, boxValue) => {
     if (gameStatus !== "playing" || floorIndex + 1 !== currentFloor) return;
     toast.dismiss();
+    setSelectedBoxHistory((prevHistory) => ({
+      ...prevHistory,
+      [currentFloor]: [...(prevHistory[currentFloor] || []), boxValue],
+    }));
 
     if (boxValue === 1) {
       if (currentFloor === totalFloors) {
@@ -93,44 +79,6 @@ const Game = () => {
     }
   };
 
-  useEffect(() => {
-    if (autoPlay && roundsToPlay > 0 && gameStatus === "playing") {
-      const timeout = setTimeout(() => {
-        let boxValue;
-        switch (difficultyLevel) {
-          case "normal":
-            boxValue = Math.random() < 0.95 ? 1 : 0;
-            break;
-          case "medium":
-            boxValue = Math.random() < 0.75 ? 1 : 0;
-            break;
-          case "hard":
-            boxValue = Math.random() < 0.55 ? 1 : 0;
-            break;
-          case "impossible":
-            boxValue = Math.random() < 0.15 ? 1 : 0;
-            break;
-          default:
-            boxValue = Math.random() < 0.5 ? 0 : 1;
-            break;
-        }
-        handleBoxClick(currentFloor - 1, boxValue);
-        setRoundsToPlay(roundsToPlay - 1);
-        if (roundsToPlay === 1 || gameStatus !== "playing") {
-          setAutoPlay(false);
-        }
-      }, 1000);
-      return () => clearTimeout(timeout);
-    }
-  }, [
-    autoPlay,
-    roundsToPlay,
-    gameStatus,
-    currentFloor,
-    handleBoxClick,
-    difficultyLevel,
-  ]);
-
   const handleStartAutoPlay = () => {
     if (roundsToPlay > 0 && gameStatus === "playing") {
       setAutoPlay(true);
@@ -149,6 +97,10 @@ const Game = () => {
     setGameStatus("playing");
     setCurrentFloor(1);
     setPoints(30);
+    setSelectedBoxHistory({});
+    setRoundsToPlay(5);
+    setBombSelected(false);
+    setIsRevealing(false);
   };
 
   const handleGameActivation = () => {
@@ -160,9 +112,68 @@ const Game = () => {
       alert("Not enough points to activate the game.");
     }
   };
+  useEffect(() => {
+    backgroundMusic.play();
+    return () => {
+      backgroundMusic.stop();
+    };
+  }, []);
+  useEffect(() => {
+    let newTotalFloors = 8;
+    let newBoxesPerFloor = 3;
+    switch (difficultyLevel) {
+      case "normal":
+        newBoxesPerFloor = 4;
+        break;
+      case "medium":
+        newBoxesPerFloor = 3;
+        break;
+      case "hard":
+        newBoxesPerFloor = 3;
+        break;
+      case "impossible":
+        newBoxesPerFloor = 4;
+        break;
+      default:
+        break;
+    }
+    setTotalFloors(newTotalFloors);
+    setBoxesPerFloor(newBoxesPerFloor);
+  }, [difficultyLevel]);
+  useEffect(() => {
+    if (autoPlay && roundsToPlay > 0 && gameStatus === "playing") {
+      const timeout = setTimeout(() => {
+        let boxValue;
+        const randomValue = Math.random();
+        switch (difficultyLevel) {
+          case "normal":
+            boxValue = randomValue < 0.95 ? 1 : 0;
+            break;
+          case "medium":
+            boxValue = randomValue < 0.75 ? 1 : 0;
+            break;
+          case "hard":
+            boxValue = randomValue < 0.55 ? 1 : 0;
+            break;
+          case "impossible":
+            boxValue = randomValue < 0.15 ? 1 : 0;
+            break;
+          default:
+            boxValue = randomValue < 0.5 ? 0 : 1;
+            break;
+        }
+        handleBoxClick(currentFloor - 1, boxValue);
+        setRoundsToPlay(roundsToPlay - 1);
+        if (roundsToPlay === 1 || gameStatus !== "playing") {
+          setAutoPlay(false);
+        }
+      }, 1000);
 
+      return () => clearTimeout(timeout);
+    }
+  }, [autoPlay, roundsToPlay, gameStatus, currentFloor, difficultyLevel]);
   return (
-    <div className="flex flex-col items-center justify-center h-full md:h-screen ">
+    <div className="flex flex-col items-center justify-center max-md:px-4 h-screen ">
       {!gameStarted && (
         <DialogBox
           setDifficultyLevel={setDifficultyLevel}
@@ -170,9 +181,9 @@ const Game = () => {
         />
       )}
       {gameStarted && (
-        <div className="shadow-2xl p-6 rounded-lg bg-slate-700 text-white">
+        <div className="shadow-2xl p-6 rounded-lg bg-slate-700 text-white font-start2p">
           <Header difficultyLevel={difficultyLevel} />
-          <div className="grid grid-cols-1 gap-4 place-content-center">
+          <div className="flex flex-col-reverse max-md:max-w-[340px] gap-4 place-content-center">
             {Array.from({ length: totalFloors }).map(
               (_, floorIndex) =>
                 gameStatus === "playing" && (
@@ -192,7 +203,7 @@ const Game = () => {
             )}
           </div>
           {gameStatus === "won" && (
-            <div className="text-xl text-green-600">
+            <div className="text-xl text-green-600 text-center">
               Congratulations! You've reached the top!
             </div>
           )}

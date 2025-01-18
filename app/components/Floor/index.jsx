@@ -16,7 +16,6 @@ const Floor = ({
   gameOver,
   onGameOver,
   onReset,
-  bombSelect,
   isRevealing,
 }) => {
   const gemSound = new Howl({

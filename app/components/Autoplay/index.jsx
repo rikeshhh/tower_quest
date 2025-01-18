@@ -8,10 +8,10 @@ const AutoPlayControls = ({
 }) => {
   return (
     gameStatus === "playing" && (
-      <div className="flex flex-wrap font-start2p gap-4 justify-center items-center mt-5 -mb-4">
+      <div className="flex flex-wrap font-start2p gap-4 justify-center items-center mt-5 -mb-4 max-md:text-xs">
         <button
           onClick={handleStartAutoPlay}
-          className={`bg-gray-400 hover:bg-gray-500 text-white py-2 px-4 rounded ${
+          className={`bg-red-400 hover:bg-red-500 text-white py-2 px-4 rounded-lg  ${
             roundsToPlay > 0 && gameStatus === "playing"
               ? ""
               : "bg-gray-400 cursor-not-allowed"
