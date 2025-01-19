@@ -14,8 +14,6 @@ const Floor = ({
   selectedBoxHistory,
   setSelectedBoxHistory,
   gameOver,
-  onGameOver,
-  onReset,
   isRevealing,
 }) => {
   const gemSound = new Howl({
@@ -98,32 +96,19 @@ const Floor = ({
   const handleClick = (boxIndex, boxValue) => {
     if (boxValue === 0) {
       setBombSelected(true);
-      setRevealAll(true); 
+      setRevealAll(true);
       bombSound.play();
-
-      if (onGameOver) {
-        onGameOver();
-      }
-      setTimeout(() => {
-        if (onReset) {
-          onReset();
-        }
-        setRevealAll(false);
-      }, 2000);
     } else if (boxValue === 1) {
       gemSound.play();
-      setSelectedBoxHistory((prev) => ({
-        ...prev,
-        [floorIndex]: boxIndex,
-      }));
-    }else {
+    } else {
       selectionSound.play();
     }
 
-    handleBoxClick(floorIndex, boxValue);
     const updatedChosenBoxes = [...chosenBoxes];
     updatedChosenBoxes[boxIndex] = true;
     setChosenBoxes(updatedChosenBoxes);
+
+    handleBoxClick(floorIndex, boxValue, boxIndex);
   };
 
   if (!boxesPerFloor || boxesPerFloor <= 0) {
@@ -135,16 +120,14 @@ const Floor = ({
       <div className="text-xs mb-2 mx-2 mt-4 font-start2p gap-2 flex">Floor <span className="text-red-600 animate-pulse">'{floorIndex + 1}'</span></div>
       {boxIndices.map((boxIndex) => {
         let boxValue = boxIndex < numGems ? 1 : 0;
-        let content =
-          boxValue === 0 ? (
-            <FaBomb size={28} className="text-black" />
-          ) : (
-            <FaGem size={28} className="text-sky-500" />
-          );
+        let content = boxValue === 0 ? (
+          <FaBomb size={28} className="text-black" />
+        ) : (
+          <FaGem size={28} className="text-sky-500" />
+        );
 
         const isCurrentFloor = currentFloor === floorIndex + 1;
-        const wasGemSelected =
-          selectedBoxHistory[floorIndex] === boxIndex && boxValue === 1;
+        const isSelected = selectedBoxHistory[floorIndex] === boxIndex;
         const shouldReveal =
           chosenBoxes[boxIndex] ||
           currentFloor > floorIndex + 1 ||
@@ -158,7 +141,7 @@ const Floor = ({
               ${
                 isCurrentFloor && !bombSelected
                   ? "bg-slate-800 transform shadow-md cursor-pointer"
-                  : wasGemSelected
+                  : isSelected
                   ? "bg-red-300 ring-2 ring-red-500"
                   : bombSelected && boxValue === 0
                   ? "bg-red-500"
@@ -171,7 +154,7 @@ const Floor = ({
                   ? "transition-all duration-500"
                   : "transition-all duration-100"
               }
-              `}
+            `}
             onClick={
               isCurrentFloor && !bombSelected && !isRevealing
                 ? () => handleClick(boxIndex, boxValue)
@@ -182,8 +165,8 @@ const Floor = ({
               content
             ) : (
               <div className="transform transition-all duration-300 hover:scale-110">
-                    <FaGift size={28} className="text-rose-500" />
-                  </div>
+                <FaGift size={28} className="text-rose-500" />
+              </div>
             )}
           </div>
         );

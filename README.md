@@ -17,3 +17,17 @@ This is a simple game project built with React and Howler.js for audio effects.
 
    ```bash
    npm install
+## Screenshots
+Here are some visuals of the project in action:
+
+### Home Page
+![Home Page](./assets/home-page.png)
+
+### Tower Quest
+![Tower](./assets/tower_quest.png)
+
+### Gem
+![gem](./assets/gem.png)
+
+### Bomb
+![bomb](./assets/bomb.png)

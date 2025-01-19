@@ -9,7 +9,6 @@ import { toast } from "react-hot-toast";
 import Footer from "../../components/Footer";
 import AutoPlayControls from "../../components/Autoplay";
 import Message from "../../components/Message";
-import { FaMusic, FaSun } from "react-icons/fa";
 
 const Game = () => {
   const [bombSelected, setBombSelected] = useState(false);
@@ -25,6 +24,7 @@ const Game = () => {
   const [points, setPoints] = useState(50);
   const [selectedBoxHistory, setSelectedBoxHistory] = useState({});
   const [resetKey, setResetKey] = useState(0);
+
   const backgroundMusic = new Howl({
     src: ["/audio/background-music.mp3"],
     loop: true,
@@ -36,51 +36,83 @@ const Game = () => {
     src: ["/audio/lose.mp3"],
   });
 
-  const handleBoxClick = (floorIndex, boxValue) => {
+  const handleBoxClick = (floorIndex, boxValue, selectedBoxIndex) => {
     if (gameStatus !== "playing" || floorIndex + 1 !== currentFloor) return;
+
     toast.dismiss();
+
     setSelectedBoxHistory((prevHistory) => ({
       ...prevHistory,
-      [currentFloor]: [...(prevHistory[currentFloor] || []), boxValue],
+      [floorIndex]: selectedBoxIndex,
     }));
 
     if (boxValue === 1) {
       if (currentFloor === totalFloors) {
         setGameStatus("won");
-        gemWin.play();
         setAutoPlay(false);
+        gemWin.play();
       } else {
         setCurrentFloor(currentFloor + 1);
+        switch (difficultyLevel) {
+          case "normal":
+            toast("You've found 💎");
+            setBoxesPerFloor(4);
+            setPoints(points + 10);
+            break;
+          case "medium":
+            toast("You've found 💎");
+            setBoxesPerFloor(3);
+            setPoints(points + 10);
+            break;
+          case "hard":
+            toast("You've found 💎");
+            setBoxesPerFloor(3);
+            setPoints(points + 5);
+            break;
+          case "impossible":
+            toast("You've found 💎");
+            setBoxesPerFloor(4);
+            setPoints(points + 5);
+            break;
+          default:
+            break;
+        }
       }
     } else {
       setBombSelected(true);
       setIsRevealing(true);
-      setPoints(points - 15);
+      setAutoPlay(false);
       bombLoss.play();
+      const newPoints = points - 15;
+      setPoints(newPoints);
       setTimeout(() => {
-        if (points - 15 <= 0) {
+        if (newPoints <= 0) {
           setGameStatus("lost");
-          setAutoPlay(false);
         } else {
           toast("Ops! That's a bomb 😭", {
             icon: "💣",
           });
-
-          setGameStatus("playing");
-          setCurrentFloor(1);
-          setRoundsToPlay(5);
-          setBombSelected(false);
-          setIsRevealing(false);
-          setSelectedBoxHistory({});
-          setResetKey((prevKey) => prevKey + 1);
-          bombLoss.play();
+          setTimeout(() => {
+            setGameStatus("playing");
+            setCurrentFloor(1);
+            setRoundsToPlay(5);
+            setBombSelected(false);
+            setIsRevealing(false);
+            setSelectedBoxHistory({});
+            setResetKey((prevKey) => prevKey + 1);
+          }, 2000);
         }
-      }, 2000);
+      }, 1000);
     }
   };
 
   const handleStartAutoPlay = () => {
-    if (roundsToPlay > 0 && gameStatus === "playing") {
+    if (
+      roundsToPlay > 0 &&
+      gameStatus === "playing" &&
+      !bombSelected &&
+      !isRevealing
+    ) {
       setAutoPlay(true);
     }
   };
@@ -101,6 +133,7 @@ const Game = () => {
     setRoundsToPlay(5);
     setBombSelected(false);
     setIsRevealing(false);
+    setAutoPlay(false); 
   };
 
   const handleGameActivation = () => {
@@ -112,12 +145,14 @@ const Game = () => {
       alert("Not enough points to activate the game.");
     }
   };
+
   useEffect(() => {
     backgroundMusic.play();
     return () => {
       backgroundMusic.stop();
     };
   }, []);
+
   useEffect(() => {
     let newTotalFloors = 8;
     let newBoxesPerFloor = 3;
@@ -140,38 +175,66 @@ const Game = () => {
     setTotalFloors(newTotalFloors);
     setBoxesPerFloor(newBoxesPerFloor);
   }, [difficultyLevel]);
+
   useEffect(() => {
-    if (autoPlay && roundsToPlay > 0 && gameStatus === "playing") {
+    if (
+      autoPlay &&
+      roundsToPlay > 0 &&
+      gameStatus === "playing" &&
+      !bombSelected &&
+      !isRevealing
+    ) {
       const timeout = setTimeout(() => {
-        let boxValue;
-        const randomValue = Math.random();
+        let successProbability;
         switch (difficultyLevel) {
           case "normal":
-            boxValue = randomValue < 0.95 ? 1 : 0;
+            successProbability = 0.95;
             break;
           case "medium":
-            boxValue = randomValue < 0.75 ? 1 : 0;
+            successProbability = 0.75;
             break;
           case "hard":
-            boxValue = randomValue < 0.55 ? 1 : 0;
+            successProbability = 0.55;
             break;
           case "impossible":
-            boxValue = randomValue < 0.15 ? 1 : 0;
+            successProbability = 0.15;
             break;
           default:
-            boxValue = randomValue < 0.5 ? 0 : 1;
-            break;
+            successProbability = 0.5;
         }
-        handleBoxClick(currentFloor - 1, boxValue);
-        setRoundsToPlay(roundsToPlay - 1);
-        if (roundsToPlay === 1 || gameStatus !== "playing") {
+
+        const selectedBoxIndex = Math.floor(Math.random() * boxesPerFloor);
+        const isSuccessful = Math.random() < successProbability;
+        setSelectedBoxHistory((prevHistory) => ({
+          ...prevHistory,
+          [currentFloor - 1]: selectedBoxIndex,
+        }));
+        handleBoxClick(
+          currentFloor - 1,
+          isSuccessful ? 1 : 0,
+          selectedBoxIndex
+        );
+        if (isSuccessful && !bombSelected) {
+          setRoundsToPlay((prev) => prev - 1);
+        }
+        if (roundsToPlay === 1) {
           setAutoPlay(false);
         }
       }, 1000);
 
       return () => clearTimeout(timeout);
     }
-  }, [autoPlay, roundsToPlay, gameStatus, currentFloor, difficultyLevel]);
+  }, [
+    autoPlay,
+    roundsToPlay,
+    gameStatus,
+    currentFloor,
+    difficultyLevel,
+    boxesPerFloor,
+    bombSelected,
+    isRevealing,
+  ]);
+
   return (
     <div className="flex flex-col items-center justify-center max-md:px-4 h-screen ">
       {!gameStarted && (
