@@ -21,13 +21,13 @@ This is a simple game project built with React and Howler.js for audio effects.
 Here are some visuals of the project in action:
 
 ### Home Page
-![Home Page](./assets/home-page.png)
+![Home Page](./app/assets/home-page.png)
 
 ### Tower Quest
-![Tower](./assets/tower_quest.png)
+![Tower](./app/assets/tower_quest.png)
 
 ### Gem
-![gem](./assets/gem.png)
+![gem](./app/assets/gem.png)
 
 ### Bomb
-![bomb](./assets/bomb.png)
+![bomb](./app/assets/bomb.png)
